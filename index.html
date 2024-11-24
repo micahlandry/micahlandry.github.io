@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<head>
+	<link rel="stylesheet" href="./node_modules/github-markdown-css/github-markdown-dark.css">
+	<link rel="stylesheet" href="./added_styles/styles.css">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+	<style>
+		.markdown-body {
+			box-sizing: border-box;	
+			
+		}
+		.kittycat {
+			margin-left: 32%;
+		}
+		#first-header {
+			margin-left: 25%;
+		}
+		.header-text {
+			color: orange;
+			font-family: "Roboto", sans-serif;
+			font-weight: 400;
+			font-size: medium;
+		}
+		@media (max-width: 768px) {
+			body .markdown-body {
+				width: 100%;
+				margin: 0%;
+			}
+			#first-header {
+				margin-left: 0%;
+				padding-left: 15px;
+			}
+			.markdown-body {
+				padding: 15px;
+			}
+			.kittycat {
+				margin-left: 10%;
+			}
+		}
+	</style>
+</head>
+<body>
+	<h4 style="width: 100%; margin-top: 5px; margin-bottom: 0; padding-top: 10px; color: white;"><a class="header-text" id="first-header" href="./index.html">About Me</a>&nbsp;&nbsp;&nbsp;&nbsp;<a class="header-text" href="./posts.html">Posts</a></h4>
+
+	<article class="markdown-body" style="padding-top: 0px">
+		<h1 style=""></h1>
+		<h1 style="border-bottom: none; margin: 0; margin-bottom: 10px;">About Me</h1>
+		<p>
+		Hey, I'm Micah. I study computer science and I play <a href="https://en.wikipedia.org/wiki/Capture_the_flag_(cybersecurity)">CTF</a>. This website exists to share my writeups and thoughts.
+		</p>
+		<p>
+		My email is <code>landrymicah@protonmail.com</code>
+		</p>
+		<pre class="kittycat" style="background-color: #161616;">     
+               |\      _,,,---,,_
+         ZZZzz /,`.-'`'    -.  ;-;;,_
+              |,4-  ) )-,_. ,\ (  `'-'
+             '---''(_/--'  `-'\_) 
+		</pre>
+	</article>
+</body>
+
+<!-- What are you doing here? -->
+git push -u origin main

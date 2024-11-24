@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<head>
+	<link rel="stylesheet" href="./node_modules/github-markdown-css/github-markdown-dark.css">
+	<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js?skin=sons-of-obsidian"></script>
+	<link rel="stylesheet" href="./added_styles/styles.css">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+	<style>
+		.markdown-body {
+			box-sizing: border-box;	
+			
+		}
+		.kittycat {
+			margin-left: 32%;
+		}
+		#first-header {
+			margin-left: 25%;
+		}
+		.header-text {
+			color: orange;
+			font-family: "Roboto", sans-serif;
+			font-weight: 400;
+			font-size: medium;
+		}
+		@media (max-width: 768px) {
+			body .markdown-body {
+				width: 100%;
+				margin: 0%;
+			}
+			#first-header {
+				margin-left: 0%;
+				padding-left: 15px;
+			}
+			.markdown-body {
+				padding: 15px;
+			}
+			.kittycat {
+				margin-left: 10%;
+			}
+		}
+	</style>
+</head>
+<body>
+	<h4 style="width: 100%; margin-top: 5px; margin-bottom: 0; padding-top: 10px; color: white;"><a class="header-text" id="first-header" href="./index.html">About Me</a>&nbsp;&nbsp;&nbsp;&nbsp;<a class="header-text" href="./posts.html">Posts</a></h4>
+	<article style="padding-top: 0px;" class="markdown-body">
+		<h1></h1>
+		<h1 style="border-bottom: none; padding-bottom: 0; margin: 0px">2048 ai</h1>
+		<h5 style="margin-top: 0; padding-top: 0px; color: #59636e">2024-11-21</h5>
+		<p>
+		I recently competed with <b>Shell We Hack?</b> in <a href="https://2024.blockctf.com">BlockCTF 2024</a>. I began late and only had the 
+		time to solve two challenges, one being this challenge, 2048 ai.
+		</p>
+		<p>
+			To begin, we're given the challenge description <blockquote>Can you speedrun 2048?<br /><br />nc 54.85.45.101 8006</blockquote>When connecting to the server using netcat as indicated the following
+			response is provided:</p>
+			<pre><code>micah@micahs_laptop ~ % nc 54.85.45.101 8006
+
+	2     0     0     0
+	0     0     0     2
+	0     0     0     0
+	0     0     0     0
+	
+Enter command(s) (w/a/s/d for movement, q to quit):</code></pre>
+		<p>
+			Entering one of <code>w</code>, <code>a</code>, <code>s</code>, or <code>d</code> (<code>w</code>, in this case) returns the next iteration:
+		</p>
+		<pre><code>Enter command(s) (w/a/s/d for movement, q to quit): w
+
+	2     0     0     2
+	0     0     2     0
+	0     0     0     0
+	0     0     0     0
+
+Enter command(s) (w/a/s/d for movement, q to quit):</code></pre>
+
+		<p>
+			When seeing this we can infer, given the name of the challenge, that what we're interacting
+			with is a text-based version of the popular game 2048: <a href="https://play2048.co/">https://play2048.co/</a>. With this in mind
+			we can safely assume that in order to get the flag, we must win the game and achieve a tile with the value
+			of 2048.
+		</p>
+		<p>A quick google search reveals that the average move count to win 2048 is 938.8<a id="footnote1_content" href="#footnote1_source"><sup style="font-size: 14px;">[1]</sup></a>, which is too large
+		to attempt manually or by brute-force.
+		</p>
+		<p>
+			After fumbling around for a while with trying to modify pre-existing, old algorithms, I decided to search the challenge name, 2048 ai, on github and found this repo:
+			<a href="https://github.com/nneonneo/2048-ai">https://github.com/nneonneo/2048-ai</a>, for which the README.md contained the following instructions for manual use:
+		<pre><code>Enter board one row at a time, with entries separated by spaces
+Row 1: 16 128 256 1024
+Row 2: 16 8 2 0
+Row 3: 8 2 0 0 
+Row 4: 0 4 0 0
+Current board:
+	16      128      256     1024 
+	16       8        2        0 
+	8        2        0        0 
+	0        4        0        0 
+Enter updates in the form r,c,n (1-indexed row/column), separated by spaces: 
+	16      128      256     1024 
+	16       8        2        0 
+	8        2        0        0 
+	0        4        0        0 
+005.030340: Score 0, Move 1: up
+EXECUTE MOVE: up
+Current board:
+	32      128      256     1024 
+	8        8        2        0 
+	0        2        0        0 
+	0        4        0        0 
+Enter updates in the form r,c,n (1-indexed row/column), separated by spaces: 3,1,4
+	32      128      256     1024 
+	8        8        2        0 
+	4        2        0        0 
+	0        4        0        0 
+035.648508: Score 0, Move 2: left
+EXECUTE MOVE: left
+Current board:
+	32      128      256     1024 
+	16       2        0        0 
+	4        2        0        0 
+	4        0        0        0 
+Enter updates in the form r,c,n (1-indexed row/column), separated by spaces: 4,3,2
+	32      128      256     1024 
+	16       2        0        0 
+	4        2        0        0 
+	4        0        2        0 
+058.927319: Score 0, Move 3: left
+EXECUTE MOVE: left</code></pre>
+			<p>
+				The challenge author was likely referencing
+				this specific repository when creating the challenge. The solution path
+				then becomes clear<a id="footnote2_content" href="#footnote2_source"><sup style="font-size: 14px;">[2]</sup></a>:
+			</p>
+			<ol>
+				<li>Clone the repo and follow the install instructions</li>
+				<li>Set up a listener for the solver ai</li>
+				<li>Write a script to connect the two, passing the game-board from the remote server to the solver script,
+					and vice-versa
+				</li>
+				<li>flag</li>
+			</ol>
+			<p>
+				A  bit later in the morning I completed the following spaghetti-code python script:
+			</p>
+			<pre><code class="prettyprint">from pwn import *
+
+game = remote('54.85.45.101', 8006)
+solver = remote('127.0.0.1', 1337)
+
+#Receiving and setting up the initial board from the game
+
+game_response = game.recvuntil(b'quit):')
+current_board = []
+
+for row in game_response.decode().splitlines():
+	current_board.append([x for x in row.split()])
+
+current_board.pop(0)
+current_board.pop(-1)
+current_board.pop(-1)
+
+current_board = [[int(j) for j in i] for i in current_board]
+
+def printboard(name, b):
+	print()
+	print(name+ ":")
+	for i in range(4):
+		current_row = " ".join(str(x) for x in b[i])
+		print(current_row, end="\n")
+	print()
+
+printboard("Gameboard from gameserver", current_board)
+
+#Sending the initial board off to the solver
+print("Sending to solver...:")
+for i in range(4):
+	canary = b'Row ' + str(i + 1).encode() + b':'
+	solver.recvuntil(canary)
+	
+	current_row = " ".join(str(x) for x in current_board[i]).encode()
+	print(current_row)
+
+	solver.send(current_row + b'\n')
+
+solver_reponse  = solver.recvuntil(b'spaces:')
+print(solver_reponse.decode())
+solver.send(b'\n')
+print("\\n")
+
+while True:
+	solver_reponse  = solver.recvuntil(b'spaces:')
+	print(solver_reponse.decode())
+	
+	solver_response_array = []
+
+	for row in solver_reponse.decode().splitlines():
+		solver_response_array.append([x for x in row.split()])
+
+	for i in range(5):
+		solver_response_array.pop(0)
+
+	solver_response_array.pop(1)
+	solver_response_array.pop(-1)
+
+	solver_move_choice, solver_new_board = solver_response_array[0][2], solver_response_array[1:]
+
+	printboard("Solve board after move" ,solver_new_board)
+	printboard("Game board before move: ", current_board)
+	
+	#Makes the move the AI decided in the actual game, and output the delta with the new squares in r,c,n format
+	match solver_move_choice:
+		case "left":
+			solver_move_choice = b'a'
+		case "right":
+			solver_move_choice = b'd'
+		case "up":
+			solver_move_choice = b'w'
+		case "down":
+			solver_move_choice = b's'
+
+	game.send(solver_move_choice + b'\n')
+
+	try:
+		game_response = game.recvuntil(b'quit):')
+	except: 
+		game.interactive() #FOUND THE FLAG!
+	current_board = []
+
+	for row in game_response.decode().splitlines():
+		current_board.append([x for x in row.split()])
+
+	current_board.pop(0)
+	current_board.pop(-1)
+	current_board.pop(-1)
+
+	current_board = [[int(j) for j in i] for i in current_board]
+	printboard("Game board after move", current_board)
+	
+	#calcluating the r,c,n by checking the delta:
+	deltas = []
+	for i in range(4):
+		for j in range(4):
+			if int(solver_new_board[i][j]) != current_board[i][j]:
+				deltas.append(str(i + 1) + "," + str(j + 1) + "," + str(current_board[i][j]))
+		
+
+	#send off deltas, repeat entire process until 2048 is achieved
+	solver.send(" ".join(deltas).encode() + b'\n')
+	print(" ".join(deltas))</code></pre>
+	
+<p>Running the script hammers the terminal with several dozen moves per second, however after 940 moves we are greeted with the beautiful
+		2048 tile and the following output:
+	</p>
+	<pre><code>Game board before move:
+2 0 0 4
+0 0 0 2
+2 2 8 4
+1024 1024 32 2
+
+[*] Switching to interactive mode
+	
+		2     4     2     0
+		2     0     0     0
+		4     8     4     0
+		2048  32    2     0
+
+Congratulations! You reached 2048 and won the game!
+flag{f4st3r_th4n_hum4nly_p0ssibl3}
+[*] Got EOF while reading in interactive</code></pre>
+	<p style="margin-bottom: 0;">This solves the challenge and outputs the flag: <code>flag{f4st3r_th4n_hum4nly_p0ssibl3}</code></p>
+	<h1 style="margin-top: 0px;"></h1>
+	<ol>
+				
+		<li id="footnote1_source" style="color: #59636e;">
+			<a href="https://jdlm.info/articles/2017/08/05/markov-chain-2048.html">https://jdlm.info/articles/2017/08/05/markov-chain-2048.html </a><sup><a style="font-size: 10px;"href="#footnote1_content">⮐</a></sup>
+			<br />
+		</li>
+		<li id="footnote2_source" style="color: #59636e;">
+			<p style="color: #59636e;">Of course there is an easier way to achieve the same result, which is to 
+				manually change the functions within the solver library, but I thought passing the board data back and forth between connections was
+				abstractly much more pleasing and decided to continue down that route <sup><a style="font-size: 10px;"href="#footnote2_content">⮐</a></sup>
+			</p>	
+		</li>
+	</ol>
+	</article>
+</body>

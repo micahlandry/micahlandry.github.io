@@ -1,0 +1,28 @@
+.markdown-body {
+    width: 50%;
+    margin-left:25%;
+    margin-right: 25%;
+    margin-top: 0%;
+    padding-top: 0px;
+    background-color: #161616;
+    padding: 0;
+}
+
+body {
+    padding: 0px;
+    margin: 0px;
+    background-color: #161616;
+}
+
+a {
+    text-decoration: none;
+}
+
+code {
+    background-color: gray;
+}
+
+
+
+
+
