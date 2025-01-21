@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<head>
+	<link rel="stylesheet" href="./node_modules/github-markdown-css/github-markdown-dark.css">
+	<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js?skin=sons-of-obsidian"></script>
+	<link rel="stylesheet" href="./added_styles/styles.css">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+	<style>
+		.markdown-body {
+			box-sizing: border-box;	
+			
+		}
+		.kittycat {
+			margin-left: 32%;
+		}
+		#first-header {
+			margin-left: 25%;
+		}
+		.header-text {
+			color: orange;
+			font-family: "Roboto", sans-serif;
+			font-weight: 400;
+			font-size: medium;
+		}
+		@media (max-width: 768px) {
+			body .markdown-body {
+				width: 100%;
+				margin: 0%;
+			}
+			#first-header {
+				margin-left: 0%;
+				padding-left: 15px;
+			}
+			.markdown-body {
+				padding: 15px;
+			}
+			.kittycat {
+				margin-left: 10%;
+			}
+		}
+	</style>
+</head>
+<body>
+	<h4 style="width: 100%; margin-top: 5px; margin-bottom: 0; padding-top: 10px; color: white;"><a class="header-text" id="first-header" href="./index.html">About Me</a>&nbsp;&nbsp;&nbsp;&nbsp;<a class="header-text" href="./posts.html">Posts</a></h4>
+	<article style="padding-top: 0px;" class="markdown-body">
+		<h1></h1>
+		<h1 style="border-bottom: none; padding-bottom: 0; margin: 0px">Bulletproof Access Control</h1>
+		<h5 style="margin-top: 0; padding-top: 0px; color: #59636e">2025-01-21</h5>
+		<p>
+		The university club for which I'm the Training Coordinator of, <a href="https://unbcybersec.com">unbcybersec</a>, has recently started a <a href="https://cotw.unbcybersec.com">challenge of the week (COTW)</a> program.
+		
+		<p>The goal is to continue pushing out new CTF challenges each week, with the intention to have some fun and introduce
+		our members (and whoever else would like to try their hand) to various areas of cybersecurity and CTF competitions.</p>
+
+
+		I made the challenge for week #2, and this is a writeup of that challenge, Bulletproof Access Control.
+		</p>	
+		<p>
+			To begin, we're given the challenge description <blockquote>These darn script kiddies keep pwning my admin dashboard!!! Unfortunately for them, much like the ancient samurai of Tsushima, with sharp blades and knives woven tightly at their waist, my computer is my katana. No one is getting through this time!!! Fear me!!!</blockquote>
+		</p>
+
+   		<p>and an IP and port. No source code of the application is provided, by my intention. When navigating to http://&lt;IP&gt;&lt;PORT&gt;/ we 
+			encounter this page:
+		</p>
+
+		<img src="image_1.jpeg" alt="image_1">
+		<p></p>
+		<p>Investigating the HTML behind the page doesn't reveal anything interesting other than some styling.
+			Popping open the dev tools however and noticing the presence of a cookie begins the path towards solving the challenge.
+		</p>
+
+		<p>At first glance the cookie looks like a JWT given the classic <code>eY</code> beginning and the periods seemingly delimiting 
+		the header, payload, and signature as per the JWT spec. Sticking with this assumption though is a mistake.</p>
+
+		<p>Chucking the cookie into JWT.io to see it's contintuent parts, or even simply base64 decoding it reveals that something 
+			is awry. JSON data containing and identity claim exists where the header information should belong, and the payload looks
+			like nonsense.
+		</p>
+		<img src="image_3.jpeg" alt="image 3">
+		<p></p>
+		<p>Some json data is still present though, so chucking that hash into any sort of hash identification program will reveal
+			that it's an md5 hash. Subsequently cracking the hash with Hashcat or the well-known Crackstation will reaveal that the plaintext is "user".
+		</p>
+		<p>Given the text on the main page stating "YOU'RE NOT AUTHENTICATED" and the amiguous "user" role assigned in the cookie, the solution is likely to forge a valid cookie where the "username" value is something in the realm of 
+			"admin", "authenticated", "administrator", "authorized", etc.</p>
+		<p>Simply trying to replace the md5(user) value with the digest md5("admin") and submitting that cookie won't work though,
+			as JWT's are signed tokens, which requires the knowledge of some secret key. Bruteforcing this key is one possibility,
+			but often not doable due to their complexity.
+		</p>
+		<p>Regardless, this cookie clearly is not a JWT due to the presence of a claim in the header, or is at the minumum a very, 
+			very poorly made one.
+		</p>
+		<p>Knowing this we can enumerate the application more to get a better understanding of what
+			might be happening on the back-end, which might reveal a framework-specific standard for cookies if we're lucky. Enumerating is key here.
+		</p>
+		<p>A common place for server type and version information to be provided is within HTTP response headers. Another is within server error messages.
+		</p>
+		<p>We can see the former in action by opening the network tab in a browser, refreshing the page, taking a peek at the response headers.</p>
+		<img src="image_2.jpeg" alt="image 2">
+		<p></p>
+		<p>The server responds with some mandatory HTTP information, but also includes a <code>Server</code> header with the value <code>Werkzeug/3.1.3 Python/3.9.21</code>.
+		   Googling "Werkzeug/3.1.3 Python/3.9.21" and appending "cookies" and/or "ctf" will sooner or later reveal to you that it's a Flask server.
+		   </p>
+		   <p>You may also immediately stumble across several CTF writeups relating to scenarios suspiciously similar to this challenge, or you can find those writeups directly
+		   by searching "Flask ctf cookies" or "Flask cookie structure". A great article discussing the topic of flask cookie forging which inspired me to create this challenge can be found <a href="https://blog.paradoxis.nl/defeating-flasks-session-management-65706ba9d3ce">here</a>.</p>
+
+		   	<p>Below is an <a href="https://ldvargas.medium.com/hackpackctf-cookie-forge-3d922862d383">article</a>
+			   you might stumble across when searching around. This example describes an almost carbon copy challenge and solution as described in this blog post.</p>
+			<img src="image_4.jpeg" alt="image 4">
+			<p></p>
+		<p>Now armed with proper information about flask cookies, their structure, and signing, as described in the articles above, the solution path can be planned.</p>
+		<p>To attain administrator privileges (and thus the flag) the value for the "username" key in the flask session cookie will likely need to be the md5 hash of "admin". As described above,
+		   that cookie will need to be signed with some secret key, which is stored on the server. However, we obviously don't have access to the server source code, so it will either need to be 
+		   discovered via another vulnerability, or brute-forced. The second option is more likely as nothing has pointed to the presence of a LFI vulnerability or leak in another form yet.
+		</p>
+		<p>For brute-forcing, serveral different wordlists can be used, but rockyou.txt, the defacto CTF go-to for many cracking tasks is the intended wordlist by challenge design due to its prevelance.
+		</p>
+		<p>Once we have successfully brute-forced the secret key using flask-unsign (as it seems to be the most immediately available tool used for this purpose) we can resign the cookie using the secret and send the cookie off
+			to the server in a request to get the flag.
+		</p>
+		<h3>Solution</h3>
+		<p>The exact intended solution steps are described and shown below:</p>
+		
+			<p>1. Grab and decode the cookie (to ensure the tool is working) using some sort of software which can modify flask cookies (flask-unsign).</p>
+			<img src="image_5.png" alt="image 5">
+			<br>
+			<img src="image_6.png" alt="image 6">
+			<br>
+			<p>2. Brute-force the secret key of the cookie using a wordlist (rockyou.txt as mentioned above and many others would suffice).</p>
+			<img src="image_7.png" alt="image 7">
+			<br>
+			<p>3. Resign the cookie with the secret key where the username claim is the md5 hash of "admin", set it as the session
+				cookie within your browser, and refresh to recieve the flag.
+			</p>
+			<img src="image_8.png" alt="image 8">
+			<br>
+			<img src="image_9.png" alt="image 9">
+			<br>
+			<img src="image_10.png" alt="image 10">
+			<p style="margin-top: 5px; margin-bottom: 0px;">And the challenge is solved! <code>UNBCTF{1Ns3cuR3_s3Cr37_k3Y}</code></p>
+		
+		<h1 style="margin-top: 0px;"></h1>
+		<b></b>
+	</article>
+</body>
